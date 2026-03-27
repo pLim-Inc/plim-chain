@@ -162,3 +162,37 @@ impl pallet_template::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_template::weights::SubstrateWeight<Runtime>;
 }
+
+/// P:L:I:M: custom pallets configuration
+
+impl pallet_plim_identity::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+}
+
+impl pallet_plim_payments::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+}
+
+impl pallet_plim_mandates::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+}
+
+impl pallet_plim_channels::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+}
+
+impl pallet_plim_delegation::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+}
+
+impl pallet_plim_compliance::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+}
+
+impl pallet_plim_reputation::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+}
+
+impl pallet_plim_timestamps::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+}

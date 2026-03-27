@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{AccountId, BalancesConfig, RuntimeGenesisConfig, SudoConfig};
+use crate::{AccountId, BalancesConfig, RuntimeGenesisConfig, SudoConfig, UNIT};
 use alloc::{vec, vec::Vec};
 use frame_support::build_struct_json_patch;
 use serde_json::Value;
@@ -23,6 +23,9 @@ use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_consensus_grandpa::AuthorityId as GrandpaId;
 use sp_genesis_builder::{self, PresetId};
 use sp_keyring::Sr25519Keyring;
+
+/// Endowment for test accounts: 1,000,000 PLIM each.
+const ENDOWMENT: u128 = 1_000_000 * UNIT;
 
 // Returns the genesis config presets populated with given parameters.
 fn testnet_genesis(
@@ -35,7 +38,7 @@ fn testnet_genesis(
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, 1u128 << 60))
+				.map(|k| (k, ENDOWMENT))
 				.collect::<Vec<_>>(),
 		},
 		aura: pallet_aura::GenesisConfig {

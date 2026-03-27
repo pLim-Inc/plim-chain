@@ -225,4 +225,29 @@ mod runtime {
 	// Include the custom logic from the pallet-template in the runtime.
 	#[runtime::pallet_index(7)]
 	pub type Template = pallet_template;
+
+	// P:L:I:M: custom pallets
+	#[runtime::pallet_index(10)]
+	pub type PlimIdentity = pallet_plim_identity;
+
+	#[runtime::pallet_index(11)]
+	pub type PlimPayments = pallet_plim_payments;
+
+	#[runtime::pallet_index(12)]
+	pub type PlimMandates = pallet_plim_mandates;
+
+	#[runtime::pallet_index(13)]
+	pub type PlimChannels = pallet_plim_channels;
+
+	#[runtime::pallet_index(14)]
+	pub type PlimDelegation = pallet_plim_delegation;
+
+	#[runtime::pallet_index(15)]
+	pub type PlimCompliance = pallet_plim_compliance;
+
+	#[runtime::pallet_index(16)]
+	pub type PlimReputation = pallet_plim_reputation;
+
+	#[runtime::pallet_index(17)]
+	pub type PlimTimestamps = pallet_plim_timestamps;
 }
