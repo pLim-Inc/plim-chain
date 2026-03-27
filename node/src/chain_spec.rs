@@ -7,8 +7,8 @@ use sp_core::crypto::Ss58Codec;
 pub type ChainSpec = sc_service::GenericChainSpec;
 
 /// Token properties for the Plim Chain.
-fn plim_properties() -> sc_chain_spec::Properties {
-	let mut properties = sc_chain_spec::Properties::new();
+fn plim_properties() -> serde_json::Map<String, serde_json::Value> {
+	let mut properties = serde_json::Map::<String, serde_json::Value>::new();
 	properties.insert("tokenSymbol".into(), json!("PLIM"));
 	properties.insert("tokenDecimals".into(), json!(12));
 	properties.insert("ss58Format".into(), json!(42));
