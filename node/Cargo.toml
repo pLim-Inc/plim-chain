@@ -32,8 +32,6 @@ sc-basic-authorship.default-features = true
 sc-basic-authorship.workspace = true
 sc-cli.default-features = true
 sc-cli.workspace = true
-serde_json.default-features = true
-serde_json.workspace = true
 sc-client-api.default-features = true
 sc-client-api.workspace = true
 sc-consensus-aura.default-features = true
@@ -81,6 +79,8 @@ sp-timestamp.default-features = true
 sp-timestamp.workspace = true
 substrate-frame-rpc-system.default-features = true
 substrate-frame-rpc-system.workspace = true
+serde_json.default-features = true
+serde_json.workspace = true
 static_init = { version = "1.0.3", features = ["parking_lot"] }
 
 [build-dependencies]
