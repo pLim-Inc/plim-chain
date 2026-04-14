@@ -27,6 +27,7 @@ pallet-assets = { workspace = true, default-features = false }
 pallet-balances.workspace = true
 pallet-grandpa.workspace = true
 pallet-sudo.workspace = true
+pallet-multisig.workspace = true
 pallet-timestamp.workspace = true
 pallet-plim-identity.workspace = true
 pallet-plim-payments.workspace = true
@@ -76,6 +77,7 @@ std = [
 	"pallet-balances/std",
 	"pallet-grandpa/std",
 	"pallet-sudo/std",
+	"pallet-multisig/std",
 	"pallet-timestamp/std",
 	"pallet-plim-identity/std",
 	"pallet-plim-payments/std",
@@ -115,6 +117,7 @@ runtime-benchmarks = [
 	"pallet-balances/runtime-benchmarks",
 	"pallet-grandpa/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
+	"pallet-multisig/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-plim-identity/runtime-benchmarks",
 	"pallet-plim-payments/runtime-benchmarks",
@@ -138,6 +141,7 @@ try-runtime = [
 	"pallet-balances/try-runtime",
 	"pallet-grandpa/try-runtime",
 	"pallet-sudo/try-runtime",
+	"pallet-multisig/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-plim-identity/try-runtime",
 	"pallet-plim-payments/try-runtime",

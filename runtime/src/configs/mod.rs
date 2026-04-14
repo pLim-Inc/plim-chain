@@ -157,6 +157,31 @@ impl pallet_sudo::Config for Runtime {
 	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+	// Base deposit held while a multisig call is pending, per polkadot-sdk reference values.
+	// ~1 UNIT base + ~0.05 UNIT per additional signatory keeps the floor cheap enough for
+	// a 3-of-5 council operation but still discourages spam.
+	pub const MultisigDepositBase: Balance = UNIT;
+	pub const MultisigDepositFactor: Balance = UNIT / 20;
+	pub const MaxMultisigSignatories: u32 = 16;
+}
+
+/// pallet-multisig — enables N-of-M threshold accounts (the 3-of-5 council
+/// that will take over `Sudo::set_key` in runtime spec_version 102).
+/// The multi_account_id derivation is deterministic and chain-agnostic, so
+/// the 3-of-5 SS58 address can be computed off-chain and injected via
+/// `Sudo::set_key(multisig)` as soon as this runtime upgrade lands.
+impl pallet_multisig::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type Currency = Balances;
+	type DepositBase = MultisigDepositBase;
+	type DepositFactor = MultisigDepositFactor;
+	type MaxSignatories = MaxMultisigSignatories;
+	type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
+	type BlockNumberProvider = System;
+}
+
 /// Configure pallet-assets for the multi-token catalog
 /// (ePL / gPLIM / pEUR / pUSD — PLIM native stays in pallet-balances).
 impl pallet_assets::Config for Runtime {
