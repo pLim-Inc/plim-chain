@@ -8,6 +8,8 @@ repository.workspace = true
 edition.workspace = true
 publish = false
 
+# Updated 2026-04-14T15:00 — concrete genesis allocations + 7 pallet implementations
+
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
 
@@ -16,11 +18,11 @@ codec = { features = ["derive"], workspace = true }
 frame-support.workspace = true
 frame-system.workspace = true
 scale-info = { features = ["derive"], workspace = true }
+sp-runtime = { default-features = false, workspace = true }
 
 [dev-dependencies]
 sp-core = { default-features = true, workspace = true }
 sp-io = { default-features = true, workspace = true }
-sp-runtime = { default-features = true, workspace = true }
 
 [features]
 default = ["std"]
@@ -29,6 +31,7 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"scale-info/std",
+	"sp-runtime/std",
 ]
 runtime-benchmarks = [
 	"frame-support/runtime-benchmarks",

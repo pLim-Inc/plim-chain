@@ -128,16 +128,22 @@ pub fn local_config_genesis() -> Value {
 /// team vesting and validator session keys are all freshly generated keys
 /// whose mnemonics are stored encrypted off-chain.
 ///
-/// Token allocation:
-///   - Treasury     : 100,000,000 PLIM
-///   - Team vesting :  50,000,000 PLIM
+/// Token allocation — total supply 1,000,000,000 PLIM at genesis:
+///   - Treasury     : 600,000,000 PLIM (60%, governance-managed)
+///   - Team vesting : 200,000,000 PLIM (20%, vesting wired in v3)
 ///   - Sudo         :       1,000 PLIM (gas-only — not a treasury)
+///   - Reserve      : 200,000,000 PLIM (20%, NOT minted at genesis — issued
+///                                       post-launch via treasury proposals
+///                                       for airdrops, validator rewards
+///                                       and ecosystem grants)
 ///
 /// Asset catalog (created in `pallet-assets`):
 ///   id=1 ePL    "ePLIM Staking"     12 dec
 ///   id=2 gPLIM  "Plim Governance"   12 dec
 ///   id=3 pEUR   "Plim Euro"          6 dec
 ///   id=4 pUSD   "Plim US Dollar"     6 dec
+///
+/// Updated 2026-04-14T15:00 — concrete genesis allocations + 7 pallet implementations
 pub fn mainnet_genesis() -> Value {
 	// SAFETY: these public keys come from `plim-node key generate` and are
 	// the canonical 32-byte sr25519 / ed25519 representations.
@@ -152,9 +158,15 @@ pub fn mainnet_genesis() -> Value {
 	build_struct_json_patch!(RuntimeGenesisConfig {
 		balances: BalancesConfig {
 			balances: vec![
-				(treasury.clone(), 100_000_000 * UNIT),
-				(team.clone(), 50_000_000 * UNIT),
+				// 60% — protocol treasury (governance-managed).
+				(treasury.clone(), 600_000_000 * UNIT),
+				// 20% — team & contributors (vesting via pallet_vesting in v3).
+				(team.clone(), 200_000_000 * UNIT),
+				// gas-only for sudo to send extrinsics during bootstrap.
 				(sudo.clone(), 1_000 * UNIT),
+				// Remaining 20% (200M) is reserved for: airdrops, validator
+				// rewards and ecosystem grants — added post-genesis via
+				// treasury proposals, NOT minted here.
 			],
 		},
 		aura: pallet_aura::GenesisConfig {

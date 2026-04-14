@@ -184,9 +184,15 @@ impl pallet_assets::Config for Runtime {
 }
 
 /// P:L:I:M: custom pallets configuration
+///
+/// Updated 2026-04-14T15:00 — concrete genesis allocations + 7 pallet implementations
+/// All custom-pallet origins are temporarily wired to `EnsureRoot` until the
+/// governance council goes live in v3.
 
 impl pallet_plim_identity::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
+	type MaxNameLen = ConstU32<64>;
+	type VerifierOrigin = EnsureRoot<AccountId>;
 }
 
 impl pallet_plim_payments::Config for Runtime {
@@ -205,14 +211,20 @@ impl pallet_plim_channels::Config for Runtime {
 
 impl pallet_plim_delegation::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
+	// 14_400 blocks ≈ 1 day at 6s blocks.
+	type BlocksPerDay = ConstU32<14_400>;
 }
 
 impl pallet_plim_compliance::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
+	type ComplianceOrigin = EnsureRoot<AccountId>;
 }
 
 impl pallet_plim_reputation::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
+	type AdminOrigin = EnsureRoot<AccountId>;
+	// 100_800 blocks ≈ 1 week at 6s blocks.
+	type AttestCooldown = ConstU32<100_800>;
 }
 
 impl pallet_plim_timestamps::Config for Runtime {
