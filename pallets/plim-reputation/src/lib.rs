@@ -18,6 +18,7 @@ pub use pallet::*;
 pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
+	use frame_support::sp_runtime::Saturating;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -31,8 +32,12 @@ pub mod pallet {
 
 		/// Minimum number of blocks between two `attest` calls from the same
 		/// attester to the same target. ~1 week at 6s blocks ≈ 100_800.
+		///
+		/// Declared as `Get<u32>` (not `Get<BlockNumberFor<Self>>`) so the runtime
+		/// can supply a plain `ConstU32` without `parameter_types!{}` plumbing.
+		/// We convert at the use site via `.into()`.
 		#[pallet::constant]
-		type AttestCooldown: Get<BlockNumberFor<Self>>;
+		type AttestCooldown: Get<u32>;
 	}
 
 	#[pallet::storage]
@@ -88,7 +93,8 @@ pub mod pallet {
 			let now = frame_system::Pallet::<T>::block_number();
 			if let Some(last) = LastAttestation::<T>::get(&who, &target) {
 				let elapsed = now.saturating_sub(last);
-				ensure!(elapsed >= T::AttestCooldown::get(), Error::<T>::RateLimited);
+				let cooldown: BlockNumberFor<T> = T::AttestCooldown::get().into();
+				ensure!(elapsed >= cooldown, Error::<T>::RateLimited);
 			}
 
 			LastAttestation::<T>::insert(&who, &target, now);

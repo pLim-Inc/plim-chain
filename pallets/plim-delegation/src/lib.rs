@@ -37,6 +37,7 @@ pub mod pallet {
 	use super::*;
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
+	use frame_support::sp_runtime::Saturating;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -46,8 +47,11 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// Approximate number of blocks per day (14_400 at 6s blocks).
+		///
+		/// Declared as `Get<u32>` so the runtime can supply a `ConstU32` directly
+		/// without `parameter_types!{}` plumbing — converted at use site via `.into()`.
 		#[pallet::constant]
-		type BlocksPerDay: Get<BlockNumberFor<Self>>;
+		type BlocksPerDay: Get<u32>;
 	}
 
 	#[pallet::storage]
@@ -146,7 +150,8 @@ pub mod pallet {
 				ensure!(now <= info.expires_at, Error::<T>::DelegationExpired);
 
 				// Day rollover.
-				if now.saturating_sub(info.day) >= T::BlocksPerDay::get() {
+				let blocks_per_day: BlockNumberFor<T> = T::BlocksPerDay::get().into();
+				if now.saturating_sub(info.day) >= blocks_per_day {
 					info.day = now;
 					info.used_today = 0;
 				}
