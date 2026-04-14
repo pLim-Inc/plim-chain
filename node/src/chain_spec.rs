@@ -1,5 +1,5 @@
 use sc_service::ChainType;
-use plim_runtime::WASM_BINARY;
+use plim_runtime::{genesis_config_presets::MAINNET_RUNTIME_PRESET, WASM_BINARY};
 use serde_json::json;
 use sp_core::crypto::Ss58Codec;
 
@@ -40,5 +40,25 @@ pub fn local_chain_spec() -> Result<ChainSpec, String> {
 	.with_chain_type(ChainType::Local)
 	.with_properties(plim_properties())
 	.with_genesis_config_preset_name(sp_genesis_builder::LOCAL_TESTNET_RUNTIME_PRESET)
+	.build())
+}
+
+/// Plim Chain Mainnet v2 — clean genesis (no Alice sudo).
+///
+/// This is the chain spec for the *next* mainnet, generated from
+/// `mainnet_genesis()` in the runtime. The currently-running mainnet on
+/// port 9946 (genesis 0xd13f10b8…) stays untouched; this is its successor.
+pub fn mainnet_chain_spec() -> Result<ChainSpec, String> {
+	Ok(ChainSpec::builder(
+		WASM_BINARY.ok_or_else(|| "Mainnet wasm not available".to_string())?,
+		None,
+	)
+	.with_name("Plim Chain Mainnet v2")
+	.with_id("plim_mainnet_v2")
+	.with_protocol_id("plim2")
+	.with_chain_type(ChainType::Live)
+	.with_properties(plim_properties())
+	.with_genesis_config_preset_name(MAINNET_RUNTIME_PRESET)
+	.with_boot_nodes(vec![])
 	.build())
 }

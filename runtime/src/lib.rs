@@ -69,7 +69,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 100,
+	spec_version: 101,
 	impl_version: 1,
 	apis: apis::RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -222,9 +222,8 @@ mod runtime {
 	#[runtime::pallet_index(6)]
 	pub type Sudo = pallet_sudo;
 
-	// Include the custom logic from the pallet-template in the runtime.
-	#[runtime::pallet_index(7)]
-	pub type Template = pallet_template;
+	#[runtime::pallet_index(8)]
+	pub type Assets = pallet_assets;
 
 	// P:L:I:M: custom pallets
 	#[runtime::pallet_index(10)]

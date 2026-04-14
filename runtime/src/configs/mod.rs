@@ -26,13 +26,13 @@
 // Substrate and Polkadot dependencies
 use frame_support::{
 	derive_impl, parameter_types,
-	traits::{ConstBool, ConstU128, ConstU32, ConstU64, ConstU8, VariantCountOf},
+	traits::{AsEnsureOriginWithArg, ConstBool, ConstU128, ConstU32, ConstU64, ConstU8, VariantCountOf},
 	weights::{
 		constants::{RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND},
 		IdentityFee, Weight,
 	},
 };
-use frame_system::limits::{BlockLength, BlockWeights};
+use frame_system::{limits::{BlockLength, BlockWeights}, EnsureRoot, EnsureSigned};
 use pallet_transaction_payment::{ConstFeeMultiplier, FungibleAdapter, Multiplier};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_runtime::{traits::One, Perbill};
@@ -42,7 +42,7 @@ use sp_version::RuntimeVersion;
 use super::{
 	AccountId, Aura, Balance, Balances, Block, BlockNumber, Hash, Nonce, PalletInfo, Runtime,
 	RuntimeCall, RuntimeEvent, RuntimeFreezeReason, RuntimeHoldReason, RuntimeOrigin, RuntimeTask,
-	System, EXISTENTIAL_DEPOSIT, SLOT_DURATION, VERSION,
+	System, EXISTENTIAL_DEPOSIT, SLOT_DURATION, UNIT, VERSION,
 };
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
@@ -157,10 +157,30 @@ impl pallet_sudo::Config for Runtime {
 	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
-/// Configure the pallet-template in pallets/template.
-impl pallet_template::Config for Runtime {
+/// Configure pallet-assets for the multi-token catalog
+/// (ePL / gPLIM / pEUR / pUSD — PLIM native stays in pallet-balances).
+impl pallet_assets::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = pallet_template::weights::SubstrateWeight<Runtime>;
+	type Balance = Balance;
+	type AssetId = u32;
+	type AssetIdParameter = codec::Compact<u32>;
+	type Currency = Balances;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDeposit = ConstU128<{ 100 * UNIT }>;
+	type AssetAccountDeposit = ConstU128<{ UNIT }>;
+	type MetadataDepositBase = ConstU128<{ 10 * UNIT }>;
+	type MetadataDepositPerByte = ConstU128<{ UNIT }>;
+	type ApprovalDeposit = ConstU128<{ UNIT }>;
+	type StringLimit = ConstU32<50>;
+	type Freezer = ();
+	type Holder = ();
+	type Extra = ();
+	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
+	type RemoveItemsLimit = ConstU32<1000>;
+	type CallbackHandle = ();
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = ();
 }
 
 /// P:L:I:M: custom pallets configuration
@@ -171,6 +191,8 @@ impl pallet_plim_identity::Config for Runtime {
 
 impl pallet_plim_payments::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type MaxMandatesPerAccount = ConstU32<64>;
 }
 
 impl pallet_plim_mandates::Config for Runtime {

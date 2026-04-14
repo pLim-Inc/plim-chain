@@ -5835,6 +5835,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
+name = "pallet-assets"
+version = "42.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47e7b226dac42400ed2bac82ecdb672413f805c7b48e481875c3ecb7f517bfcf"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "impl-trait-for-tuples",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
 name = "pallet-aura"
 version = "39.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5976,6 +5993,8 @@ version = "0.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
+ "pallet-assets",
+ "pallet-balances",
  "parity-scale-codec",
  "scale-info",
  "sp-core",
@@ -6486,6 +6505,8 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
+ "hex-literal",
+ "pallet-assets",
  "pallet-aura",
  "pallet-balances",
  "pallet-grandpa",
@@ -6498,7 +6519,6 @@ dependencies = [
  "pallet-plim-reputation",
  "pallet-plim-timestamps",
  "pallet-sudo",
- "pallet-template",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
