@@ -25,6 +25,7 @@ frame-try-runtime = { optional = true, workspace = true }
 pallet-aura.workspace = true
 pallet-assets = { workspace = true, default-features = false }
 pallet-balances.workspace = true
+pallet-nfts = { workspace = true, default-features = false }
 pallet-grandpa.workspace = true
 pallet-sudo.workspace = true
 pallet-multisig.workspace = true
@@ -37,6 +38,9 @@ pallet-plim-delegation.workspace = true
 pallet-plim-compliance.workspace = true
 pallet-plim-reputation.workspace = true
 pallet-plim-timestamps.workspace = true
+pallet-plim-licenses.workspace = true
+pallet-plim-marketplace.workspace = true
+pallet-plim-royalties.workspace = true
 pallet-transaction-payment-rpc-runtime-api.workspace = true
 pallet-transaction-payment.workspace = true
 scale-info = { features = ["derive", "serde"], workspace = true }
@@ -75,6 +79,7 @@ std = [
 	"pallet-aura/std",
 	"pallet-assets/std",
 	"pallet-balances/std",
+	"pallet-nfts/std",
 	"pallet-grandpa/std",
 	"pallet-sudo/std",
 	"pallet-multisig/std",
@@ -87,6 +92,9 @@ std = [
 	"pallet-plim-compliance/std",
 	"pallet-plim-reputation/std",
 	"pallet-plim-timestamps/std",
+	"pallet-plim-licenses/std",
+	"pallet-plim-marketplace/std",
+	"pallet-plim-royalties/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
 	"scale-info/std",
@@ -115,6 +123,7 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 	"pallet-assets/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
+	"pallet-nfts/runtime-benchmarks",
 	"pallet-grandpa/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
 	"pallet-multisig/runtime-benchmarks",
@@ -127,6 +136,9 @@ runtime-benchmarks = [
 	"pallet-plim-compliance/runtime-benchmarks",
 	"pallet-plim-reputation/runtime-benchmarks",
 	"pallet-plim-timestamps/runtime-benchmarks",
+	"pallet-plim-licenses/runtime-benchmarks",
+	"pallet-plim-marketplace/runtime-benchmarks",
+	"pallet-plim-royalties/runtime-benchmarks",
 	"pallet-transaction-payment/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 ]
@@ -139,6 +151,7 @@ try-runtime = [
 	"pallet-aura/try-runtime",
 	"pallet-assets/try-runtime",
 	"pallet-balances/try-runtime",
+	"pallet-nfts/try-runtime",
 	"pallet-grandpa/try-runtime",
 	"pallet-sudo/try-runtime",
 	"pallet-multisig/try-runtime",
@@ -151,6 +164,9 @@ try-runtime = [
 	"pallet-plim-compliance/try-runtime",
 	"pallet-plim-reputation/try-runtime",
 	"pallet-plim-timestamps/try-runtime",
+	"pallet-plim-licenses/try-runtime",
+	"pallet-plim-marketplace/try-runtime",
+	"pallet-plim-royalties/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"sp-runtime/try-runtime",
 ]

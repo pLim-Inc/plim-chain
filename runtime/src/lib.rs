@@ -69,7 +69,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 102,
+	spec_version: 200,
 	impl_version: 1,
 	apis: apis::RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -253,4 +253,18 @@ mod runtime {
 
 	#[runtime::pallet_index(17)]
 	pub type PlimTimestamps = pallet_plim_timestamps;
+
+	// P:L:I:M:/Chain Artbook — on-chain NFT minting (250 collection)
+	#[runtime::pallet_index(20)]
+	pub type Nfts = pallet_nfts;
+
+	// 3dplim Marketplace — Licenses, Marketplace & Royalties (spec 200)
+	#[runtime::pallet_index(30)]
+	pub type PlimLicenses = pallet_plim_licenses;
+
+	#[runtime::pallet_index(31)]
+	pub type PlimMarketplace = pallet_plim_marketplace;
+
+	#[runtime::pallet_index(32)]
+	pub type PlimRoyalties = pallet_plim_royalties;
 }

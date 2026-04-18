@@ -17,6 +17,9 @@ members = [
     "pallets/plim-compliance",
     "pallets/plim-reputation",
     "pallets/plim-timestamps",
+    "pallets/plim-royalties",
+    "pallets/plim-licenses",
+    "pallets/plim-marketplace",
     "runtime",
 ]
 resolver = "2"
@@ -32,6 +35,9 @@ pallet-plim-delegation = { path = "./pallets/plim-delegation", default-features 
 pallet-plim-compliance = { path = "./pallets/plim-compliance", default-features = false }
 pallet-plim-reputation = { path = "./pallets/plim-reputation", default-features = false }
 pallet-plim-timestamps = { path = "./pallets/plim-timestamps", default-features = false }
+pallet-plim-royalties = { path = "./pallets/plim-royalties", default-features = false }
+pallet-plim-licenses = { path = "./pallets/plim-licenses", default-features = false }
+pallet-plim-marketplace = { path = "./pallets/plim-marketplace", default-features = false }
 clap = { version = "4.5.13" }
 frame-benchmarking-cli = { version = "47.0.0", default-features = false }
 frame-metadata-hash-extension = { version = "0.8.0", default-features = false }
@@ -77,6 +83,8 @@ frame-try-runtime = { version = "0.46.0", default-features = false }
 pallet-aura = { version = "39.0.0", default-features = false }
 pallet-assets = { version = "42.0.0", default-features = false }
 pallet-balances = { version = "41.1.0", default-features = false }
+pallet-nfts = { version = "34.0.0", default-features = false }
+pallet-nfts-runtime-api = { version = "22.0.0", default-features = false }
 pallet-grandpa = { version = "40.0.0", default-features = false }
 pallet-sudo = { version = "40.0.0", default-features = false }
 pallet-multisig = { version = "40.1.0", default-features = false }
