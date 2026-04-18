@@ -41,6 +41,9 @@ pallet-plim-timestamps.workspace = true
 pallet-plim-licenses.workspace = true
 pallet-plim-marketplace.workspace = true
 pallet-plim-royalties.workspace = true
+pallet-plim-oracle.workspace = true
+pallet-plim-kyc.workspace = true
+pallet-rwa.workspace = true
 pallet-transaction-payment-rpc-runtime-api.workspace = true
 pallet-transaction-payment.workspace = true
 scale-info = { features = ["derive", "serde"], workspace = true }
@@ -95,6 +98,9 @@ std = [
 	"pallet-plim-licenses/std",
 	"pallet-plim-marketplace/std",
 	"pallet-plim-royalties/std",
+	"pallet-plim-oracle/std",
+	"pallet-plim-kyc/std",
+	"pallet-rwa/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
 	"scale-info/std",
@@ -139,6 +145,9 @@ runtime-benchmarks = [
 	"pallet-plim-licenses/runtime-benchmarks",
 	"pallet-plim-marketplace/runtime-benchmarks",
 	"pallet-plim-royalties/runtime-benchmarks",
+	"pallet-plim-oracle/runtime-benchmarks",
+	"pallet-plim-kyc/runtime-benchmarks",
+	"pallet-rwa/runtime-benchmarks",
 	"pallet-transaction-payment/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 ]
@@ -167,6 +176,9 @@ try-runtime = [
 	"pallet-plim-licenses/try-runtime",
 	"pallet-plim-marketplace/try-runtime",
 	"pallet-plim-royalties/try-runtime",
+	"pallet-plim-oracle/try-runtime",
+	"pallet-plim-kyc/try-runtime",
+	"pallet-rwa/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"sp-runtime/try-runtime",
 ]

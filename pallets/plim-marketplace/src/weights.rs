@@ -14,6 +14,10 @@ pub trait WeightInfo {
 	fn reject_offer() -> Weight;
 	fn withdraw_offer() -> Weight;
 	fn update_platform_fee() -> Weight;
+	fn create_auction() -> Weight;
+	fn bid_auction() -> Weight;
+	fn settle_auction() -> Weight;
+	fn cancel_auction() -> Weight;
 }
 
 /// Placeholder weights — all set to 10_000 weight units.
@@ -47,6 +51,18 @@ impl WeightInfo for SubstrateWeight {
 	fn update_platform_fee() -> Weight {
 		Weight::from_parts(5_000, 0)
 	}
+	fn create_auction() -> Weight {
+		Weight::from_parts(20_000, 0)
+	}
+	fn bid_auction() -> Weight {
+		Weight::from_parts(25_000, 0)
+	}
+	fn settle_auction() -> Weight {
+		Weight::from_parts(30_000, 0)
+	}
+	fn cancel_auction() -> Weight {
+		Weight::from_parts(15_000, 0)
+	}
 }
 
 impl WeightInfo for () {
@@ -76,5 +92,17 @@ impl WeightInfo for () {
 	}
 	fn update_platform_fee() -> Weight {
 		Weight::from_parts(5_000, 0)
+	}
+	fn create_auction() -> Weight {
+		Weight::from_parts(20_000, 0)
+	}
+	fn bid_auction() -> Weight {
+		Weight::from_parts(25_000, 0)
+	}
+	fn settle_auction() -> Weight {
+		Weight::from_parts(30_000, 0)
+	}
+	fn cancel_auction() -> Weight {
+		Weight::from_parts(15_000, 0)
 	}
 }

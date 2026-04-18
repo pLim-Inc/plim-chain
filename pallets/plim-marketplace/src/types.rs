@@ -55,3 +55,54 @@ pub struct Offer<AccountId, Balance, BlockNumber, Hash> {
 	pub expires_at: BlockNumber,
 	pub status: OfferStatus,
 }
+
+// ---------------------------------------------------------------------------
+// Auction extension
+// ---------------------------------------------------------------------------
+
+/// Lifecycle of an auction.
+#[derive(
+	Clone, Copy, Encode, Decode, DecodeWithMemTracking, MaxEncodedLen, TypeInfo, PartialEq, Eq, RuntimeDebug,
+)]
+pub enum AuctionStatus {
+	/// Auction created, current block < start_block.
+	Scheduled,
+	/// Auction is live and accepting bids.
+	Active,
+	/// Auction reached end_block but not yet settled.
+	Ended,
+	/// Auction settled — proceeds distributed, NFT transferred to winner (or
+	/// returned to seller if no qualifying bid).
+	Settled,
+	/// Auction cancelled by seller before any bids.
+	Cancelled,
+}
+
+/// A bid on an auction.
+#[derive(
+	Clone, Encode, Decode, DecodeWithMemTracking, MaxEncodedLen, TypeInfo, PartialEq, Eq, RuntimeDebug,
+)]
+pub struct Bid<AccountId, Balance, BlockNumber> {
+	pub bidder: AccountId,
+	pub amount: Balance,
+	pub at_block: BlockNumber,
+}
+
+/// On-chain English auction with reserve, anti-snipe extension, and split payout
+/// matching the marketplace `buy_now` flow (seller / royalty / platform fee).
+#[derive(
+	Clone, Encode, Decode, DecodeWithMemTracking, MaxEncodedLen, TypeInfo, PartialEq, Eq, RuntimeDebug,
+)]
+pub struct Auction<AccountId, Balance, BlockNumber> {
+	pub seller: AccountId,
+	pub item_id: u32,
+	pub start_block: BlockNumber,
+	pub end_block: BlockNumber,
+	pub original_end_block: BlockNumber,
+	pub reserve_price: Balance,
+	pub currency: ListingCurrency,
+	pub anti_snipe_blocks: BlockNumber,
+	pub highest_bid: Option<Bid<AccountId, Balance, BlockNumber>>,
+	pub status: AuctionStatus,
+	pub created_at_block: BlockNumber,
+}

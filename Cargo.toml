@@ -20,6 +20,9 @@ members = [
     "pallets/plim-royalties",
     "pallets/plim-licenses",
     "pallets/plim-marketplace",
+    "pallets/plim-oracle",
+    "pallets/plim-kyc",
+    "pallets/plim-rwa",
     "runtime",
 ]
 resolver = "2"
@@ -38,6 +41,9 @@ pallet-plim-timestamps = { path = "./pallets/plim-timestamps", default-features 
 pallet-plim-royalties = { path = "./pallets/plim-royalties", default-features = false }
 pallet-plim-licenses = { path = "./pallets/plim-licenses", default-features = false }
 pallet-plim-marketplace = { path = "./pallets/plim-marketplace", default-features = false }
+pallet-plim-oracle = { path = "./pallets/plim-oracle", default-features = false }
+pallet-plim-kyc = { path = "./pallets/plim-kyc", default-features = false }
+pallet-rwa = { path = "./pallets/plim-rwa", default-features = false }
 clap = { version = "4.5.13" }
 frame-benchmarking-cli = { version = "47.0.0", default-features = false }
 frame-metadata-hash-extension = { version = "0.8.0", default-features = false }

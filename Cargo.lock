@@ -6025,6 +6025,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-plim-kyc"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
 name = "pallet-plim-licenses"
 version = "0.1.0"
 dependencies = [
@@ -6058,6 +6073,20 @@ dependencies = [
  "frame-support",
  "frame-system",
  "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-plim-oracle"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec",
  "scale-info",
  "sp-core",
@@ -6114,6 +6143,21 @@ version = "0.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-rwa"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
  "parity-scale-codec",
  "scale-info",
  "sp-core",
@@ -6609,13 +6653,16 @@ dependencies = [
  "pallet-plim-compliance",
  "pallet-plim-delegation",
  "pallet-plim-identity",
+ "pallet-plim-kyc",
  "pallet-plim-licenses",
  "pallet-plim-mandates",
  "pallet-plim-marketplace",
+ "pallet-plim-oracle",
  "pallet-plim-payments",
  "pallet-plim-reputation",
  "pallet-plim-royalties",
  "pallet-plim-timestamps",
+ "pallet-rwa",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",

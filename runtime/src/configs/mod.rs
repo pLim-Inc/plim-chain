@@ -36,7 +36,7 @@ use frame_support::{
 use frame_system::{limits::{BlockLength, BlockWeights}, EnsureRoot, EnsureSigned};
 use pallet_transaction_payment::{ConstFeeMultiplier, FungibleAdapter, Multiplier};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_runtime::{traits::One, Perbill};
+use sp_runtime::{traits::One, Perbill, Permill};
 use sp_version::RuntimeVersion;
 
 // Local module imports
@@ -357,6 +357,13 @@ impl pallet_plim_marketplace::OnRoyaltyPayment<AccountId, u32, Balance> for Roya
 	}
 }
 
+parameter_types! {
+	pub const MarketplaceMaxBidsPerAuction: u32 = 256;
+	pub const MarketplaceMaxAuctionsPerBlock: u32 = 64;
+	pub const MarketplaceMinAuctionDuration: u32 = 100;       // ~10 min @ 6s
+	pub const MarketplaceMinBidIncrement: Permill = Permill::from_percent(2);
+}
+
 impl pallet_plim_marketplace::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type MarketplaceOrigin = EnsureRoot<AccountId>;
@@ -367,6 +374,16 @@ impl pallet_plim_marketplace::Config for Runtime {
 	type MaxActiveListingsPerAccount = MaxActiveListingsPerAccount;
 	type OnRoyaltyPayment = RoyaltyBridge;
 	type LicenseInspect = LicenseBridge;
+	// TODO(spec 400): wire `ItemOwner` to a `pallet-nfts` adapter so auctions
+	// actually move on-chain NFT items. For spec 300 the unit `()` impl is a
+	// no-op (`owner_of => None`, `transfer => Ok(())`) which keeps auction
+	// extrinsics dispatchable without coupling marketplace to pallet-nfts yet.
+	type ItemOwner = ();
+	type AuctionId = u64;
+	type MaxBidsPerAuction = MarketplaceMaxBidsPerAuction;
+	type MaxAuctionsPerBlock = MarketplaceMaxAuctionsPerBlock;
+	type MinAuctionDuration = MarketplaceMinAuctionDuration;
+	type MinBidIncrement = MarketplaceMinBidIncrement;
 	type WeightInfo = ();
 }
 
@@ -374,5 +391,46 @@ impl pallet_plim_royalties::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type AdminOrigin = EnsureRoot<AccountId>;
 	type NativeCurrency = Balances;
+	type WeightInfo = ();
+}
+
+// ---------------------------------------------------------------------------
+// P:L:I:M:/Protocol — Oracle, KYC & RWA tokenization (spec_version 300)
+// ---------------------------------------------------------------------------
+
+parameter_types! {
+	pub const MaxOracleUpdaters: u32 = 10;
+	pub const OracleStalenessWindow: BlockNumber = 100;       // ~10 min @ 6s
+	pub const MaxKycAttestors: u32 = 20;
+	pub const MaxRwaDistributionsPerClaim: u32 = 50;
+	pub const MaxRwaShareholdersPerDistribution: u32 = 10_000;
+}
+
+impl pallet_plim_oracle::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type MaxUpdaters = MaxOracleUpdaters;
+	type StalenessWindow = OracleStalenessWindow;
+	type WeightInfo = ();
+}
+
+impl pallet_plim_kyc::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type MaxAttestors = MaxKycAttestors;
+	type WeightInfo = ();
+}
+
+impl pallet_rwa::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type RwaAssetId = u32;
+	type DistributionId = u64;
+	// TODO(spec 400): wire `Kyc = PlimKyc` once a cross-pallet adapter
+	// bridges `pallet_plim_kyc::KycProvider` → `pallet_rwa::KycProvider`
+	// (the two pallets define mirror traits to stay decoupled).
+	// For spec 300 we use the default permissive `()` impl so RWA flows
+	// can be exercised without an attestor-set bootstrap.
+	type Kyc = ();
+	type MaxDistributionsPerClaim = MaxRwaDistributionsPerClaim;
+	type MaxShareholdersPerDistribution = MaxRwaShareholdersPerDistribution;
 	type WeightInfo = ();
 }

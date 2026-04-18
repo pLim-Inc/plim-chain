@@ -1,4 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
+// Bumped from default (128) to 512 to accommodate the macro expansion of
+// `frame_support::runtime` with 16+ pallets (spec_version 300).
+#![recursion_limit = "512"]
 
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
@@ -69,7 +72,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 200,
+	spec_version: 300,
 	impl_version: 1,
 	apis: apis::RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -267,4 +270,14 @@ mod runtime {
 
 	#[runtime::pallet_index(32)]
 	pub type PlimRoyalties = pallet_plim_royalties;
+
+	// P:L:I:M:/Protocol — Oracle, KYC & RWA tokenization (spec 300)
+	#[runtime::pallet_index(33)]
+	pub type PlimOracle = pallet_plim_oracle;
+
+	#[runtime::pallet_index(40)]
+	pub type PlimKyc = pallet_plim_kyc;
+
+	#[runtime::pallet_index(41)]
+	pub type Rwa = pallet_rwa;
 }
