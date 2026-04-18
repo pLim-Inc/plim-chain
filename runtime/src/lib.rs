@@ -1,4 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
+// Bumped from default (128) to 512 to accommodate the macro expansion of
+// `frame_support::runtime` with 16+ pallets (spec_version 300).
+#![recursion_limit = "512"]
 
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
@@ -61,15 +64,15 @@ impl_opaque_keys! {
 // https://docs.substrate.io/main-docs/build/upgrade#runtime-versioning
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: alloc::borrow::Cow::Borrowed("solochain-template-runtime"),
-	impl_name: alloc::borrow::Cow::Borrowed("solochain-template-runtime"),
+	spec_name: alloc::borrow::Cow::Borrowed("plim-runtime"),
+	impl_name: alloc::borrow::Cow::Borrowed("plim-runtime"),
 	authoring_version: 1,
 	// The version of the runtime specification. A full node will not attempt to use its native
 	//   runtime in substitute for the on-chain Wasm runtime unless all of `spec_name`,
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 100,
+	spec_version: 301,
 	impl_version: 1,
 	apis: apis::RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -222,7 +225,59 @@ mod runtime {
 	#[runtime::pallet_index(6)]
 	pub type Sudo = pallet_sudo;
 
-	// Include the custom logic from the pallet-template in the runtime.
-	#[runtime::pallet_index(7)]
-	pub type Template = pallet_template;
+	#[runtime::pallet_index(8)]
+	pub type Assets = pallet_assets;
+
+	// 3-of-5 multisig council — target sudo key owner once spec_version 102 activates.
+	#[runtime::pallet_index(9)]
+	pub type Multisig = pallet_multisig;
+
+	// P:L:I:M: custom pallets
+	#[runtime::pallet_index(10)]
+	pub type PlimIdentity = pallet_plim_identity;
+
+	#[runtime::pallet_index(11)]
+	pub type PlimPayments = pallet_plim_payments;
+
+	#[runtime::pallet_index(12)]
+	pub type PlimMandates = pallet_plim_mandates;
+
+	#[runtime::pallet_index(13)]
+	pub type PlimChannels = pallet_plim_channels;
+
+	#[runtime::pallet_index(14)]
+	pub type PlimDelegation = pallet_plim_delegation;
+
+	#[runtime::pallet_index(15)]
+	pub type PlimCompliance = pallet_plim_compliance;
+
+	#[runtime::pallet_index(16)]
+	pub type PlimReputation = pallet_plim_reputation;
+
+	#[runtime::pallet_index(17)]
+	pub type PlimTimestamps = pallet_plim_timestamps;
+
+	// P:L:I:M:/Chain Artbook — on-chain NFT minting (250 collection)
+	#[runtime::pallet_index(20)]
+	pub type Nfts = pallet_nfts;
+
+	// 3dplim Marketplace — Licenses, Marketplace & Royalties (spec 200)
+	#[runtime::pallet_index(30)]
+	pub type PlimLicenses = pallet_plim_licenses;
+
+	#[runtime::pallet_index(31)]
+	pub type PlimMarketplace = pallet_plim_marketplace;
+
+	#[runtime::pallet_index(32)]
+	pub type PlimRoyalties = pallet_plim_royalties;
+
+	// P:L:I:M:/Protocol — Oracle, KYC & RWA tokenization (spec 300)
+	#[runtime::pallet_index(33)]
+	pub type PlimOracle = pallet_plim_oracle;
+
+	#[runtime::pallet_index(40)]
+	pub type PlimKyc = pallet_plim_kyc;
+
+	#[runtime::pallet_index(41)]
+	pub type Rwa = pallet_rwa;
 }
