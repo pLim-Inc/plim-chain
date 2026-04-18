@@ -67,4 +67,28 @@ mod benchmarks {
 		#[block]
 		{}
 	}
+
+	#[benchmark]
+	fn create_auction() {
+		#[block]
+		{}
+	}
+
+	#[benchmark]
+	fn bid_auction() {
+		#[block]
+		{}
+	}
+
+	#[benchmark]
+	fn settle_auction() {
+		#[block]
+		{}
+	}
+
+	#[benchmark]
+	fn cancel_auction() {
+		#[block]
+		{}
+	}
 }

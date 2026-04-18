@@ -14,7 +14,7 @@ use frame_support::BoundedVec;
 use frame_system::RawOrigin;
 use sp_core::H256;
 
-#[benchmarks]
+#[benchmarks(where BalanceOf<T>: From<u128>)]
 mod benchmarks {
 	use super::*;
 
@@ -23,9 +23,9 @@ mod benchmarks {
 		BalanceOf<T>: From<u128>,
 	{
 		let symbol: BoundedVec<u8, frame_support::pallet_prelude::ConstU32<16>> =
-			vec![bP, bL, bI, bM, b-, bX].try_into().unwrap();
+			vec![b'P', b'L', b'I', b'M', b'-', b'X'].try_into().unwrap();
 		let name: BoundedVec<u8, frame_support::pallet_prelude::ConstU32<128>> =
-			vec![bX].try_into().unwrap();
+			vec![b'X'].try_into().unwrap();
 		RwaAsset::<T> {
 			symbol,
 			name,
@@ -61,10 +61,10 @@ mod benchmarks {
 		let amount: BalanceOf<T> = 1u128.into();
 		let proof = PaymentProof { payer: manager.clone(), amount, proof_hash: H256::zero() };
 		// Pre-install asset directly.
-		Assets::<T>::insert(0u32.into(), dummy_asset::<T>(manager.clone()));
+		Assets::<T>::insert(<T as Config>::RwaAssetId::from(0u32), dummy_asset::<T>(manager.clone()));
 		AssetStatus::<T>::insert(<T as Config>::RwaAssetId::from(0u32), RwaStatus::Active);
 		#[extrinsic_call]
-		_(RawOrigin::Signed(manager), 0u32.into(), to, amount, proof);
+		_(RawOrigin::Signed(manager), <T as Config>::RwaAssetId::from(0u32), to, amount, proof);
 	}
 
 	#[benchmark]
@@ -73,11 +73,12 @@ mod benchmarks {
 		BalanceOf<T>: From<u128>,
 	{
 		let who: T::AccountId = whitelisted_caller();
-		Assets::<T>::insert(0u32.into(), dummy_asset::<T>(who.clone()));
-		Shareholders::<T>::insert(<T as Config>::RwaAssetId::from(0u32), who.clone(), 1u128.into());
-		TotalIssued::<T>::insert(<T as Config>::RwaAssetId::from(0u32), 1u128.into());
+		let one: BalanceOf<T> = 1u128.into();
+		Assets::<T>::insert(<T as Config>::RwaAssetId::from(0u32), dummy_asset::<T>(who.clone()));
+		Shareholders::<T>::insert(<T as Config>::RwaAssetId::from(0u32), who.clone(), one);
+		TotalIssued::<T>::insert(<T as Config>::RwaAssetId::from(0u32), one);
 		#[extrinsic_call]
-		_(RawOrigin::Signed(who), 0u32.into(), 1u128.into());
+		_(RawOrigin::Signed(who), <T as Config>::RwaAssetId::from(0u32), one);
 	}
 
 	#[benchmark]
@@ -87,11 +88,13 @@ mod benchmarks {
 	{
 		let from: T::AccountId = whitelisted_caller();
 		let to: T::AccountId = whitelisted_caller();
-		Assets::<T>::insert(0u32.into(), dummy_asset::<T>(from.clone()));
+		let ten: BalanceOf<T> = 10u128.into();
+		let one: BalanceOf<T> = 1u128.into();
+		Assets::<T>::insert(<T as Config>::RwaAssetId::from(0u32), dummy_asset::<T>(from.clone()));
 		AssetStatus::<T>::insert(<T as Config>::RwaAssetId::from(0u32), RwaStatus::Active);
-		Shareholders::<T>::insert(<T as Config>::RwaAssetId::from(0u32), from.clone(), 10u128.into());
+		Shareholders::<T>::insert(<T as Config>::RwaAssetId::from(0u32), from.clone(), ten);
 		#[extrinsic_call]
-		_(RawOrigin::Signed(from), 0u32.into(), to, 1u128.into());
+		_(RawOrigin::Signed(from), <T as Config>::RwaAssetId::from(0u32), to, one);
 	}
 
 	#[benchmark]
@@ -100,12 +103,13 @@ mod benchmarks {
 		BalanceOf<T>: From<u128>,
 	{
 		let manager: T::AccountId = whitelisted_caller();
-		Assets::<T>::insert(0u32.into(), dummy_asset::<T>(manager.clone()));
+		let one: BalanceOf<T> = 1u128.into();
+		Assets::<T>::insert(<T as Config>::RwaAssetId::from(0u32), dummy_asset::<T>(manager.clone()));
 		AssetStatus::<T>::insert(<T as Config>::RwaAssetId::from(0u32), RwaStatus::Active);
-		Shareholders::<T>::insert(<T as Config>::RwaAssetId::from(0u32), manager.clone(), 1u128.into());
-		TotalIssued::<T>::insert(<T as Config>::RwaAssetId::from(0u32), 1u128.into());
+		Shareholders::<T>::insert(<T as Config>::RwaAssetId::from(0u32), manager.clone(), one);
+		TotalIssued::<T>::insert(<T as Config>::RwaAssetId::from(0u32), one);
 		#[extrinsic_call]
-		_(RawOrigin::Signed(manager), 0u32.into(), 1u128.into(), Currency::Plim, H256::zero());
+		_(RawOrigin::Signed(manager), <T as Config>::RwaAssetId::from(0u32), one, Currency::Plim, H256::zero());
 	}
 
 	#[benchmark]
@@ -115,7 +119,7 @@ mod benchmarks {
 	{
 		let who: T::AccountId = whitelisted_caller();
 		#[extrinsic_call]
-		_(RawOrigin::Signed(who), 0u32.into(), 0u64.into());
+		_(RawOrigin::Signed(who), <T as Config>::RwaAssetId::from(0u32), <T as Config>::DistributionId::default());
 	}
 
 	#[benchmark]
@@ -124,9 +128,9 @@ mod benchmarks {
 		BalanceOf<T>: From<u128>,
 	{
 		let who: T::AccountId = whitelisted_caller();
-		Assets::<T>::insert(0u32.into(), dummy_asset::<T>(who.clone()));
+		Assets::<T>::insert(<T as Config>::RwaAssetId::from(0u32), dummy_asset::<T>(who.clone()));
 		#[extrinsic_call]
-		_(RawOrigin::Signed(who), 0u32.into());
+		_(RawOrigin::Signed(who), <T as Config>::RwaAssetId::from(0u32));
 	}
 
 	#[benchmark]
@@ -135,9 +139,9 @@ mod benchmarks {
 		BalanceOf<T>: From<u128>,
 	{
 		let manager: T::AccountId = whitelisted_caller();
-		Assets::<T>::insert(0u32.into(), dummy_asset::<T>(manager));
+		Assets::<T>::insert(<T as Config>::RwaAssetId::from(0u32), dummy_asset::<T>(manager));
 		#[extrinsic_call]
-		_(RawOrigin::Root, 0u32.into());
+		_(RawOrigin::Root, <T as Config>::RwaAssetId::from(0u32));
 	}
 
 	#[benchmark]
@@ -146,10 +150,10 @@ mod benchmarks {
 		BalanceOf<T>: From<u128>,
 	{
 		let manager: T::AccountId = whitelisted_caller();
-		Assets::<T>::insert(0u32.into(), dummy_asset::<T>(manager));
+		Assets::<T>::insert(<T as Config>::RwaAssetId::from(0u32), dummy_asset::<T>(manager));
 		AssetStatus::<T>::insert(<T as Config>::RwaAssetId::from(0u32), RwaStatus::Frozen);
 		#[extrinsic_call]
-		_(RawOrigin::Root, 0u32.into());
+		_(RawOrigin::Root, <T as Config>::RwaAssetId::from(0u32));
 	}
 
 	#[benchmark]
@@ -158,9 +162,9 @@ mod benchmarks {
 		BalanceOf<T>: From<u128>,
 	{
 		let manager: T::AccountId = whitelisted_caller();
-		Assets::<T>::insert(0u32.into(), dummy_asset::<T>(manager));
+		Assets::<T>::insert(<T as Config>::RwaAssetId::from(0u32), dummy_asset::<T>(manager));
 		#[extrinsic_call]
-		_(RawOrigin::Root, 0u32.into());
+		_(RawOrigin::Root, <T as Config>::RwaAssetId::from(0u32));
 	}
 
 	impl_benchmark_test_suite!(Rwa, crate::mock::new_test_ext(), crate::mock::Test);

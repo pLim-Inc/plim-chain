@@ -270,7 +270,7 @@ mod benchmarks {
 		set_creator_config(
 			RawOrigin::Signed(caller.clone()),
 			1000u16,
-			caller,
+			caller.clone(),
 			RoyaltyAsset::Native,
 		);
 	}

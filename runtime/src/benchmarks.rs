@@ -30,5 +30,8 @@ frame_benchmarking::define_benchmarks!(
 	[pallet_balances, Balances]
 	[pallet_timestamp, Timestamp]
 	[pallet_sudo, Sudo]
-	[pallet_template, Template]
+	[pallet_plim_marketplace, PlimMarketplace]
+	[pallet_plim_oracle, PlimOracle]
+	[pallet_plim_kyc, PlimKyc]
+	[pallet_rwa, Rwa]
 );
