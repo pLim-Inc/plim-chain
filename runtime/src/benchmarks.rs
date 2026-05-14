@@ -34,4 +34,5 @@ frame_benchmarking::define_benchmarks!(
 	[pallet_plim_oracle, PlimOracle]
 	[pallet_plim_kyc, PlimKyc]
 	[pallet_rwa, Rwa]
+	[pallet_plim_mesh_relay, PlimMeshRelay]
 );
