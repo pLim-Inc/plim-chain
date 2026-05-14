@@ -178,6 +178,9 @@ type Migrations = (
 	// L99 Workstream A (spec_version 301 -> 302) — backfill
 	// payment_origin_transport_code = Https on every existing mandate.
 	pallet_plim_payments::migrations::v1_to_v2_origin_transport::Migration<Runtime>,
+	// L99 Workstream A (spec_version 301 -> 302) — default
+	// device_attestation_hash = None on every existing identity.
+	pallet_plim_identity::migrations::v1_to_v2_device_attestation::Migration<Runtime>,
 );
 
 /// Executive: handles dispatch to the various modules.

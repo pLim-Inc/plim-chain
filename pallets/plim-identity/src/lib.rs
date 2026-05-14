@@ -16,6 +16,13 @@ extern crate alloc;
 
 pub use pallet::*;
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
+pub mod migrations;
+
 use codec::{Decode, DecodeWithMemTracking, Encode, MaxEncodedLen};
 use frame_support::BoundedVec;
 use scale_info::TypeInfo;
@@ -23,6 +30,21 @@ use scale_info::TypeInfo;
 #[derive(Clone, Encode, Decode, DecodeWithMemTracking, PartialEq, Eq, TypeInfo, MaxEncodedLen, Debug)]
 #[scale_info(skip_type_params(T))]
 pub struct IdentityInfo<T: Config> {
+	pub display_name: BoundedVec<u8, <T as Config>::MaxNameLen>,
+	pub country: [u8; 3],
+	pub verified_at: Option<frame_system::pallet_prelude::BlockNumberFor<T>>,
+	pub verifier: Option<<T as frame_system::Config>::AccountId>,
+	/// L99: optional ed25519-attestation hash anchored by the silicon key
+	/// (e.g. ATECC608B) on `pLim/node-external` solar nodes. `None` for all
+	/// pre-L99 identities after the v1->v2 migration runs.
+	pub device_attestation_hash: Option<[u8; 32]>,
+}
+
+/// Pre-L99 identity layout — source type for the v1->v2 device-attestation
+/// migration in `migrations::v1_to_v2_device_attestation`.
+#[derive(Clone, Encode, Decode, DecodeWithMemTracking, PartialEq, Eq, TypeInfo, Debug)]
+#[scale_info(skip_type_params(T))]
+pub struct IdentityInfoV1<T: Config> {
 	pub display_name: BoundedVec<u8, <T as Config>::MaxNameLen>,
 	pub country: [u8; 3],
 	pub verified_at: Option<frame_system::pallet_prelude::BlockNumberFor<T>>,
@@ -61,6 +83,8 @@ pub mod pallet {
 		IdentityRegistered { who: T::AccountId, country: [u8; 3] },
 		IdentityVerified { who: T::AccountId },
 		IdentityRevoked { who: T::AccountId },
+		/// L99: an identity owner set their device attestation hash.
+		DeviceAttestationSet { who: T::AccountId, attestation_hash: [u8; 32] },
 	}
 
 	#[pallet::error]
@@ -93,6 +117,7 @@ pub mod pallet {
 				country,
 				verified_at: None,
 				verifier: None,
+				device_attestation_hash: None,
 			};
 			Identities::<T>::insert(&who, info);
 
@@ -130,6 +155,31 @@ pub mod pallet {
 				Ok(())
 			})?;
 			Self::deposit_event(Event::IdentityRevoked { who });
+			Ok(())
+		}
+
+		/// L99 Workstream A: the identity owner registers an ed25519 device
+		/// attestation hash (typically Blake2-256 of the ATECC608B silicon
+		/// pubkey on a `pLim/node-external` solar node). Only the identity
+		/// owner may set or change their own attestation. Pre-existing
+		/// identities default to `None` after the v1->v2 migration; this
+		/// extrinsic is the only way the field becomes `Some`.
+		#[pallet::call_index(3)]
+		#[pallet::weight(Weight::from_parts(10_000, 0))]
+		pub fn set_device_attestation(
+			origin: OriginFor<T>,
+			attestation_hash: [u8; 32],
+		) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+			Identities::<T>::try_mutate(&who, |maybe| -> DispatchResult {
+				let info = maybe.as_mut().ok_or(Error::<T>::NotRegistered)?;
+				info.device_attestation_hash = Some(attestation_hash);
+				Ok(())
+			})?;
+			Self::deposit_event(Event::DeviceAttestationSet {
+				who,
+				attestation_hash,
+			});
 			Ok(())
 		}
 	}
