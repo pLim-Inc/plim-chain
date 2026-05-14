@@ -1,0 +1,64 @@
+//! Benchmarks for `pallet-plim-mesh-relay`.
+//!
+//! Run with the standard pLim/Chain frame-omni-bencher harness:
+//!
+//! ```text
+//! cd plim-chain
+//! cargo build --release --features runtime-benchmarks
+//! ./target/release/plim-chain benchmark pallet \
+//!     --pallet pallet-plim-mesh-relay \
+//!     --extrinsic '*' \
+//!     --steps 50 --repeat 20 \
+//!     --output pallets/plim-mesh-relay/src/weights.rs
+//! ```
+//!
+//! Until weights.rs is generated, the pallet uses the static placeholder
+//! weight `Weight::from_parts(50_000_000, 1024)` declared in `lib.rs`. That
+//! placeholder is conservative for the worst case (1 KiB payload, ed25519
+//! verification, blake2_256 hashing, 1 storage write to a BoundedVec value
+//! and 1 write to a StorageMap entry).
+
+#![cfg(feature = "runtime-benchmarks")]
+
+use super::*;
+use frame_benchmarking::v2::*;
+use frame_system::RawOrigin;
+use sp_core::{ed25519, Pair};
+
+#[benchmarks]
+mod benchmarks {
+	use super::*;
+
+	#[benchmark]
+	fn submit_relayed_transaction() {
+		// 256-byte payload, 5 EUR trailing-u64 value (under the 10 EUR cap).
+		let mut payload = alloc::vec![0u8; 248];
+		payload.extend_from_slice(&5_000_000_000_000u64.to_le_bytes());
+		let pair = ed25519::Pair::from_seed(&[7u8; 32]);
+		let pubkey = pair.public();
+		let mandate_ref = [42u8; 32];
+		let nonce = 1u64;
+
+		// Compute the same content hash the extrinsic computes so the
+		// signature verifies inside the benched call (otherwise we measure
+		// the failure path).
+		let zero_block: frame_system::pallet_prelude::BlockNumberFor<T> = 0u32.into();
+		let chain_id = <frame_system::Pallet<T>>::block_hash(zero_block);
+		let mut input = alloc::vec::Vec::with_capacity(32 + 8 + 32 + payload.len());
+		input.extend_from_slice(&mandate_ref);
+		input.extend_from_slice(&nonce.to_le_bytes());
+		input.extend_from_slice(chain_id.as_ref());
+		input.extend_from_slice(&payload);
+		let content_hash = sp_io::hashing::blake2_256(&input);
+		let sig = pair.sign(&content_hash);
+
+		let caller: T::AccountId = whitelisted_caller();
+
+		#[extrinsic_call]
+		_(RawOrigin::Signed(caller), payload, sig, pubkey, mandate_ref, nonce);
+
+		assert!(RelayedHashIndex::<T>::contains_key(content_hash));
+	}
+
+	impl_benchmark_test_suite!(Pallet, crate::mock::new_test_ext(), crate::mock::Test);
+}
