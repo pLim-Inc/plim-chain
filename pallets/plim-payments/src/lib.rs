@@ -19,9 +19,33 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+pub mod migrations;
+
 use codec::{Decode, DecodeWithMemTracking, Encode, MaxEncodedLen};
 use frame_support::traits::Currency;
 use scale_info::TypeInfo;
+
+/// L99 transport tag — records which transport carried the payment intent
+/// that produced this mandate. Default `Https` for backward compatibility
+/// with all pre-L99 mandates (the migration backfills existing rows).
+///
+/// Spec: docs/specs/L99_OODA_v1.md s3.1.
+#[derive(
+	Clone, Copy, Encode, Decode, DecodeWithMemTracking, PartialEq, Eq, TypeInfo, MaxEncodedLen, Debug,
+)]
+pub enum PaymentOriginTransportCode {
+	Https,
+	Ws,
+	Mcp,
+	Nostr,
+	Mesh,
+}
+
+impl Default for PaymentOriginTransportCode {
+	fn default() -> Self {
+		Self::Https
+	}
+}
 
 pub type BalanceOf<T> =
 	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -33,6 +57,21 @@ pub type MandateRef = [u8; 32];
 #[derive(Clone, Encode, Decode, DecodeWithMemTracking, PartialEq, Eq, TypeInfo, MaxEncodedLen, Debug)]
 #[scale_info(skip_type_params(T))]
 pub struct MandateInfo<T: Config> {
+	pub payer: <T as frame_system::Config>::AccountId,
+	pub payee: <T as frame_system::Config>::AccountId,
+	pub asset_id: u32,
+	pub allowance: u128,
+	pub expires_at: frame_system::pallet_prelude::BlockNumberFor<T>,
+	/// L99 transport tag (default `Https`). Pre-L99 mandates carry `Https`
+	/// after the `v1_to_v2_origin_transport` migration runs at spec_version 302.
+	pub payment_origin_transport_code: PaymentOriginTransportCode,
+}
+
+/// Pre-L99 mandate layout — source type for the v1->v2 origin-transport
+/// migration in `migrations::v1_to_v2_origin_transport`.
+#[derive(Clone, Encode, Decode, DecodeWithMemTracking, PartialEq, Eq, TypeInfo, Debug)]
+#[scale_info(skip_type_params(T))]
+pub struct MandateInfoV1<T: Config> {
 	pub payer: <T as frame_system::Config>::AccountId,
 	pub payee: <T as frame_system::Config>::AccountId,
 	pub asset_id: u32,
@@ -98,6 +137,11 @@ pub mod pallet {
 			amount: u128,
 			mandate_ref: MandateRef,
 		},
+		/// L99: the origin-transport tag on a mandate was changed by its payer.
+		MandateOriginTransportSet {
+			mandate_ref: MandateRef,
+			transport_code: PaymentOriginTransportCode,
+		},
 	}
 
 	#[pallet::error]
@@ -144,6 +188,8 @@ pub mod pallet {
 				asset_id,
 				allowance,
 				expires_at,
+				// L99: default Https. Use set_mandate_origin_transport to retag.
+				payment_origin_transport_code: PaymentOriginTransportCode::Https,
 			};
 			Mandates::<T>::insert(mandate_ref, info);
 			MandateCount::<T>::insert(&payer, count.saturating_add(1));
@@ -212,6 +258,35 @@ pub mod pallet {
 				asset_id,
 				amount,
 				mandate_ref,
+			});
+			Ok(())
+		}
+
+		/// L99 Workstream A: tag a mandate with the transport that should
+		/// carry payment intents drawing on it (e.g. swap to `Mesh` for an
+		/// agent operating off-grid). Only the mandate's payer may retag.
+		///
+		/// This is purely metadata — `pay()` does not consult the tag. The
+		/// gateway adapter (Workstream B) reads this code to decide whether
+		/// to route the next payment over HTTPS, WebSocket, MCP, Nostr, or
+		/// the L99 mesh.
+		#[pallet::call_index(3)]
+		#[pallet::weight(Weight::from_parts(10_000, 0))]
+		pub fn set_mandate_origin_transport(
+			origin: OriginFor<T>,
+			mandate_ref: MandateRef,
+			transport_code: PaymentOriginTransportCode,
+		) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+			Mandates::<T>::try_mutate(mandate_ref, |maybe_info| -> DispatchResult {
+				let info = maybe_info.as_mut().ok_or(Error::<T>::MandateNotFound)?;
+				ensure!(info.payer == who, Error::<T>::NotMandateOwner);
+				info.payment_origin_transport_code = transport_code;
+				Ok(())
+			})?;
+			Self::deposit_event(Event::MandateOriginTransportSet {
+				mandate_ref,
+				transport_code,
 			});
 			Ok(())
 		}

@@ -174,7 +174,11 @@ pub type SignedPayload = generic::SignedPayload<RuntimeCall, TxExtension>;
 ///
 /// This can be a tuple of types, each implementing `OnRuntimeUpgrade`.
 #[allow(unused_parens)]
-type Migrations = ();
+type Migrations = (
+	// L99 Workstream A (spec_version 301 -> 302) — backfill
+	// payment_origin_transport_code = Https on every existing mandate.
+	pallet_plim_payments::migrations::v1_to_v2_origin_transport::Migration<Runtime>,
+);
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
