@@ -8,6 +8,7 @@ use crate::{
 };
 use frame_support::{assert_noop, assert_ok, BoundedVec};
 use sp_core::H256;
+use sp_runtime::traits::Zero;
 
 // ---------------------------------------------------------------------------
 // Helpers
