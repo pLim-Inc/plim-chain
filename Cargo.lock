@@ -6671,6 +6671,7 @@ dependencies = [
  "pallet-plim-licenses",
  "pallet-plim-mandates",
  "pallet-plim-marketplace",
+ "pallet-plim-mesh-relay",
  "pallet-plim-oracle",
  "pallet-plim-payments",
  "pallet-plim-reputation",

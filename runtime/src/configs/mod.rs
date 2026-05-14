@@ -304,6 +304,16 @@ impl pallet_plim_timestamps::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 }
 
+// L99 Off-Grid Resilience Layer — Workstream A.
+// Spec docs/specs/L99_OODA_v1.md s3.1: 10_000-record bounded queue, 1024-byte
+// payload cap, 10 EUR (12-decimal stablecoin units) hard cap per offline tx.
+impl pallet_plim_mesh_relay::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type MaxRelayedQueue = ConstU32<10_000>;
+	type MaxPayloadLen = ConstU32<1024>;
+	type DefaultOfflineTxValueCap = ConstU128<10_000_000_000_000>;
+}
+
 // ---------------------------------------------------------------------------
 // 3dplim Marketplace pallets (spec_version 200)
 // ---------------------------------------------------------------------------

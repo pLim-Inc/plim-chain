@@ -72,7 +72,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 301,
+	spec_version: 302,
 	impl_version: 1,
 	apis: apis::RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -256,6 +256,11 @@ mod runtime {
 
 	#[runtime::pallet_index(17)]
 	pub type PlimTimestamps = pallet_plim_timestamps;
+
+	// L99 Off-Grid Resilience Layer — mesh-relayed offline transactions
+	// (spec_version 302). See docs/specs/L99_OODA_v1.md s3.1.
+	#[runtime::pallet_index(18)]
+	pub type PlimMeshRelay = pallet_plim_mesh_relay;
 
 	// P:L:I:M:/Chain Artbook — on-chain NFT minting (250 collection)
 	#[runtime::pallet_index(20)]
