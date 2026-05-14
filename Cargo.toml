@@ -23,6 +23,7 @@ members = [
     "pallets/plim-oracle",
     "pallets/plim-kyc",
     "pallets/plim-rwa",
+    "pallets/plim-mesh-relay",
     "runtime",
 ]
 resolver = "2"
@@ -44,6 +45,7 @@ pallet-plim-marketplace = { path = "./pallets/plim-marketplace", default-feature
 pallet-plim-oracle = { path = "./pallets/plim-oracle", default-features = false }
 pallet-plim-kyc = { path = "./pallets/plim-kyc", default-features = false }
 pallet-rwa = { path = "./pallets/plim-rwa", default-features = false }
+pallet-plim-mesh-relay = { path = "./pallets/plim-mesh-relay", default-features = false }
 clap = { version = "4.5.13" }
 frame-benchmarking-cli = { version = "47.0.0", default-features = false }
 frame-metadata-hash-extension = { version = "0.8.0", default-features = false }
