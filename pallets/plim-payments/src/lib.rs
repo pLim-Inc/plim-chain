@@ -31,20 +31,25 @@ use scale_info::TypeInfo;
 ///
 /// Spec: docs/specs/L99_OODA_v1.md s3.1.
 #[derive(
-	Clone, Copy, Encode, Decode, DecodeWithMemTracking, PartialEq, Eq, TypeInfo, MaxEncodedLen, Debug,
+	Clone,
+	Copy,
+	Encode,
+	Decode,
+	DecodeWithMemTracking,
+	PartialEq,
+	Eq,
+	TypeInfo,
+	MaxEncodedLen,
+	Debug,
+	Default,
 )]
 pub enum PaymentOriginTransportCode {
+	#[default]
 	Https,
 	Ws,
 	Mcp,
 	Nostr,
 	Mesh,
-}
-
-impl Default for PaymentOriginTransportCode {
-	fn default() -> Self {
-		Self::Https
-	}
 }
 
 pub type BalanceOf<T> =
