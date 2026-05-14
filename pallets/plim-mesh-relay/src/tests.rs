@@ -12,7 +12,10 @@
 
 #![cfg(test)]
 
-use crate::{mock::*, Error, Event, OfflineTxRecord, RelayedHashIndex, RelayedTransactions};
+use crate::{
+    mock::*, Error, Event, OfflineTxRecord, RelayedHashIndex, RelayedQueueCount,
+    RelayedTransactions,
+};
 use frame_support::{assert_noop, assert_ok};
 use sp_core::{ed25519, Pair};
 
@@ -72,9 +75,10 @@ fn submit_relayed_transaction_accepts_first_call() {
             nonce,
         ));
 
-        let queue = RelayedTransactions::<Test>::get();
-        assert_eq!(queue.len(), 1);
-        let row: &OfflineTxRecord = &queue[0];
+        // Exactly one record in the keyed queue, at index 0.
+        assert_eq!(RelayedQueueCount::<Test>::get(), 1);
+        let row: OfflineTxRecord =
+            RelayedTransactions::<Test>::get(0).expect("record inserted at index 0");
         assert_eq!(row.offline_transaction_mandate_nonce_value, nonce);
         assert_eq!(
             row.offline_transaction_size_bytes_value,
@@ -126,7 +130,8 @@ fn submit_relayed_transaction_is_idempotent_by_content_hash() {
         );
 
         // Storage still has exactly one entry — no duplicate row.
-        assert_eq!(RelayedTransactions::<Test>::get().len(), 1);
+        assert_eq!(RelayedQueueCount::<Test>::get(), 1);
+        assert_eq!(RelayedTransactions::<Test>::iter().count(), 1);
     });
 }
 
@@ -150,7 +155,8 @@ fn submit_relayed_transaction_rejects_bad_signature() {
             ),
             Error::<Test>::InvalidSignature
         );
-        assert_eq!(RelayedTransactions::<Test>::get().len(), 0);
+        assert_eq!(RelayedQueueCount::<Test>::get(), 0);
+        assert_eq!(RelayedTransactions::<Test>::iter().count(), 0);
     });
 }
 
@@ -172,7 +178,8 @@ fn submit_relayed_transaction_enforces_hard_cap() {
             ),
             Error::<Test>::ExceedsOfflineCap
         );
-        assert_eq!(RelayedTransactions::<Test>::get().len(), 0);
+        assert_eq!(RelayedQueueCount::<Test>::get(), 0);
+        assert_eq!(RelayedTransactions::<Test>::iter().count(), 0);
     });
 }
 

@@ -37,16 +37,18 @@ impl<T: frame_system::Config> pallet_plim_mesh_relay::WeightInfo for WeightInfo<
 	/// Proof: `System::BlockHash` (`max_values`: None, `max_size`: Some(44), added: 2519, mode: `MaxEncodedLen`)
 	/// Storage: `PlimMeshRelay::RelayedHashIndex` (r:1 w:1)
 	/// Proof: `PlimMeshRelay::RelayedHashIndex` (`max_values`: None, `max_size`: Some(52), added: 2527, mode: `MaxEncodedLen`)
-	/// Storage: `PlimMeshRelay::RelayedTransactions` (r:1 w:1)
-	/// Proof: `PlimMeshRelay::RelayedTransactions` (`max_values`: Some(1), `max_size`: Some(12020002), added: 12020497, mode: `MaxEncodedLen`)
+	/// Storage: `PlimMeshRelay::RelayedQueueCount` (r:1 w:1)
+	/// Proof: `PlimMeshRelay::RelayedQueueCount` (`max_values`: Some(1), `max_size`: Some(4), added: 499, mode: `MaxEncodedLen`)
+	/// Storage: `PlimMeshRelay::RelayedTransactions` (r:0 w:1)
+	/// Proof: `PlimMeshRelay::RelayedTransactions` (`max_values`: None, `max_size`: Some(1214), added: 3689, mode: `MaxEncodedLen`)
 	fn submit_relayed_transaction() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `72`
-		//  Estimated: `12021487`
-		// Minimum execution time: 55_143_000 picoseconds.
-		Weight::from_parts(56_753_000, 0)
-			.saturating_add(Weight::from_parts(0, 12021487))
+		//  Estimated: `3517`
+		// Minimum execution time: 56_711_000 picoseconds.
+		Weight::from_parts(57_340_000, 0)
+			.saturating_add(Weight::from_parts(0, 3517))
 			.saturating_add(T::DbWeight::get().reads(3))
-			.saturating_add(T::DbWeight::get().writes(2))
+			.saturating_add(T::DbWeight::get().writes(3))
 	}
 }

@@ -18,8 +18,16 @@
 //! Storage layout (ISO 11179 column naming — every field carries an `_at`,
 //! `_hash`, `_value`, `_id`, or `_code` suffix):
 //!
-//! - `RelayedTransactions` — `BoundedVec<OfflineTxRecord, MaxRelayedQueue>`,
-//!   the canonical history.
+//! - `RelayedTransactions` — `StorageMap<u32 → OfflineTxRecord>`, the canonical
+//!   history keyed by a monotonic record index. A `StorageMap` (not a single
+//!   `StorageValue<BoundedVec<…>>`) so each `submit_relayed_transaction`
+//!   extrinsic touches **one** record-sized storage item — per-extrinsic PoV
+//!   is O(1) instead of O(n). The earlier `StorageValue<BoundedVec<…>>` design
+//!   forced every extrinsic to `try_mutate` the whole 10_000-slot vec, which
+//!   the L99 §3.1.5 benchmark measured at ~12 MiB estimated proof size per
+//!   call — unviable for mainnet.
+//! - `RelayedQueueCount` — `StorageValue<u32>`, the monotonic record-index
+//!   counter; also the current queue length for the `MaxRelayedQueue` cap.
 //! - `RelayedHashIndex` — `StorageMap<content_hash → u32>` for O(1)
 //!   idempotency checks (the index into `RelayedTransactions`).
 //!
@@ -113,9 +121,18 @@ pub mod pallet {
         type DefaultOfflineTxValueCap: Get<u128>;
     }
 
+    /// Canonical offline-tx history — one record per `StorageMap` entry keyed
+    /// by a monotonic record index. A map (not `StorageValue<BoundedVec<…>>`)
+    /// so each extrinsic's PoV is O(1): only the single inserted record is in
+    /// the proof, never the whole 10_000-slot queue.
     #[pallet::storage]
     pub type RelayedTransactions<T: Config> =
-        StorageValue<_, BoundedVec<OfflineTxRecord, T::MaxRelayedQueue>, ValueQuery>;
+        StorageMap<_, Twox64Concat, u32, OfflineTxRecord, OptionQuery>;
+
+    /// Monotonic record-index counter. Also the current queue length, checked
+    /// against `T::MaxRelayedQueue` for the `QueueFull` cap. Never decremented.
+    #[pallet::storage]
+    pub type RelayedQueueCount<T: Config> = StorageValue<_, u32, ValueQuery>;
 
     /// `content_hash → index in RelayedTransactions` — O(1) idempotency lookup.
     /// Mirrors the `pallet-plim-timestamps::Anchors` pattern.
@@ -143,7 +160,7 @@ pub mod pallet {
         InvalidSignature,
         /// Decoded value exceeds `DefaultOfflineTxValueCap`.
         ExceedsOfflineCap,
-        /// `RelayedTransactions` BoundedVec is full.
+        /// `RelayedQueueCount` reached `T::MaxRelayedQueue`.
         QueueFull,
         /// Payload exceeds `MaxPayloadLen`.
         PayloadTooLarge,
@@ -166,7 +183,7 @@ pub mod pallet {
         ///   reconciliation; this pallet only enforces hard caps on raw
         ///   payload value to prevent abuse of the relay storage itself.
         #[pallet::call_index(0)]
-        #[pallet::weight(Weight::from_parts(50_000_000, 1024))]
+        #[pallet::weight(Weight::from_parts(50_000_000, 4096))]
         pub fn submit_relayed_transaction(
             origin: OriginFor<T>,
             signed_payload: alloc::vec::Vec<u8>,
@@ -226,7 +243,14 @@ pub mod pallet {
                 );
             }
 
-            // 6. Build the record and append into the bounded queue.
+            // 6. Queue-cap check — the monotonic counter doubles as the
+            //    current queue length. O(1): reads a single `u32` value.
+            let new_idx = RelayedQueueCount::<T>::get();
+            ensure!(new_idx < T::MaxRelayedQueue::get(), Error::<T>::QueueFull);
+
+            // 7. Build the record and insert into the keyed queue. Each access
+            //    touches exactly one record-sized storage item, so the
+            //    per-extrinsic PoV is O(1) — not the whole 10_000-slot queue.
             let bounded_payload: BoundedVec<u8, OfflinePayloadCap> = signed_payload
                 .try_into()
                 .map_err(|_| Error::<T>::PayloadTooLarge)?;
@@ -245,15 +269,8 @@ pub mod pallet {
                 offline_transaction_mandate_nonce_value: mandate_nonce,
             };
 
-            RelayedTransactions::<T>::try_mutate(|queue| -> DispatchResult {
-                queue
-                    .try_push(record)
-                    .map_err(|_| Error::<T>::QueueFull.into())
-            })?;
-
-            let new_idx = RelayedTransactions::<T>::decode_len()
-                .map(|n| (n - 1) as u32)
-                .unwrap_or(0);
+            RelayedTransactions::<T>::insert(new_idx, record);
+            RelayedQueueCount::<T>::put(new_idx + 1);
             RelayedHashIndex::<T>::insert(content_hash, new_idx);
 
             Self::deposit_event(Event::OfflineTxAccepted {
