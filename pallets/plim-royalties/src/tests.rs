@@ -162,3 +162,116 @@ fn update_platform_fee_admin_only() {
 		);
 	});
 }
+
+// ---------------------------------------------------------------------------
+// C-01 regression tests (audit 2026-05-15): claiming royalties must NOT mint
+// fresh tokens. The marketplace's `do_split_payout` already transferred funds
+// from buyer -> creator at sale time; the accumulator is a record only.
+// ---------------------------------------------------------------------------
+
+/// Simulates: sale (marketplace transfers PLIM buyer -> creator) -> bridge
+/// accumulates the same amount -> creator calls `claim_accumulated_royalties`
+/// for the PLIM arm. Asserts that the creator's native balance reflects ONLY
+/// the original sale transfer (no second mint from the claim).
+#[test]
+fn claim_plim_does_not_double_mint() {
+	new_test_ext().execute_with(|| {
+		use frame_support::traits::{Currency, ExistenceRequirement};
+
+		let buyer: AccountId = 2;
+		let creator: AccountId = 1;
+		let royalty_amount: Balance = 10_000;
+
+		// Baseline balances (set by `new_test_ext`).
+		let creator_before = pallet_balances::Pallet::<Test>::free_balance(&creator);
+		let buyer_before = pallet_balances::Pallet::<Test>::free_balance(&buyer);
+
+		// 1) Sale: marketplace `do_split_payout` would transfer royalty
+		//    buyer -> creator. We emulate it directly here so the test is
+		//    decoupled from the marketplace pallet.
+		<pallet_balances::Pallet<Test> as Currency<AccountId>>::transfer(
+			&buyer,
+			&creator,
+			royalty_amount,
+			ExistenceRequirement::KeepAlive,
+		)
+		.expect("buyer -> creator transfer at sale time");
+
+		let creator_after_sale = pallet_balances::Pallet::<Test>::free_balance(&creator);
+		assert_eq!(creator_after_sale, creator_before + royalty_amount);
+		assert_eq!(
+			pallet_balances::Pallet::<Test>::free_balance(&buyer),
+			buyer_before - royalty_amount,
+		);
+
+		// 2) RoyaltyBridge records the SAME amount into the accumulator.
+		<crate::Pallet<Test> as OnRoyaltyPayment<AccountId, u32, Balance>>::on_royalty_paid(
+			&creator,
+			&77,
+			royalty_amount,
+			RoyaltyCurrency::PLIM,
+		);
+		assert_eq!(
+			AccumulatedRoyalties::<Test>::get(&creator, &RoyaltyCurrency::PLIM),
+			royalty_amount,
+		);
+
+		// 3) Creator claims the PLIM bucket. With C-01 fixed, this must NOT
+		//    deposit any new tokens; the accumulator zeroes and an event is
+		//    emitted for audit, that's it.
+		assert_ok!(crate::Pallet::<Test>::claim_accumulated_royalties(
+			frame_system::RawOrigin::Signed(creator).into(),
+			RoyaltyCurrency::PLIM,
+		));
+
+		// 4) Balance MUST be exactly the post-sale balance -- no extra mint.
+		let creator_after_claim = pallet_balances::Pallet::<Test>::free_balance(&creator);
+		assert_eq!(
+			creator_after_claim, creator_after_sale,
+			"C-01 regression: claim_accumulated_royalties minted PLIM on top of the sale-time transfer",
+		);
+
+		// 5) Accumulator zeroed.
+		assert_eq!(
+			AccumulatedRoyalties::<Test>::get(&creator, &RoyaltyCurrency::PLIM),
+			0,
+		);
+	});
+}
+
+/// Non-PLIM arm (PEUR / EURFiat / EURC if added later) -- same shape: claim
+/// is event-only, never affects native balance. We exercise PEUR here as
+/// EURC is not yet in the `RoyaltyCurrency` enum.
+#[test]
+fn claim_non_plim_arm_does_not_touch_native_balance() {
+	new_test_ext().execute_with(|| {
+		let creator: AccountId = 1;
+		let royalty_amount: Balance = 5_000;
+		let creator_before = pallet_balances::Pallet::<Test>::free_balance(&creator);
+
+		// Accumulate PEUR (off-chain currency -- no on-chain transfer at sale).
+		<crate::Pallet<Test> as OnRoyaltyPayment<AccountId, u32, Balance>>::on_royalty_paid(
+			&creator,
+			&88,
+			royalty_amount,
+			RoyaltyCurrency::PEUR,
+		);
+
+		assert_ok!(crate::Pallet::<Test>::claim_accumulated_royalties(
+			frame_system::RawOrigin::Signed(creator).into(),
+			RoyaltyCurrency::PEUR,
+		));
+
+		// Native balance unchanged -- PEUR settles off-chain, claim is
+		// event-only.
+		assert_eq!(
+			pallet_balances::Pallet::<Test>::free_balance(&creator),
+			creator_before,
+		);
+		// Accumulator zeroed.
+		assert_eq!(
+			AccumulatedRoyalties::<Test>::get(&creator, &RoyaltyCurrency::PEUR),
+			0,
+		);
+	});
+}
