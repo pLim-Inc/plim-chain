@@ -49,6 +49,35 @@ use super::{
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
+// ---------------------------------------------------------------------------
+// BaseCallFilter — emergency call pause (audit C-01, spec_version 302 -> 303)
+// ---------------------------------------------------------------------------
+//
+// `pallet-plim-royalties::claim_accumulated_royalties` is currently exploitable
+// (audit row C-01, SECURITY-AUDIT-2026-05-15.md): the PLIM arm mints fresh
+// tokens on top of the marketplace's sale-time transfer, paying creators
+// twice. Until the real fix (PR `fix/royalties-double-mint-c01`) ships, this
+// filter rejects the call at the runtime level so the bug becomes uncallable.
+//
+// Pattern: implement `Contains<RuntimeCall>` on a unit struct, list each
+// rejected call, and let everything else pass through. This replaces the
+// `derive_impl` default of `Everything` for `frame_system::Config::BaseCallFilter`.
+//
+// When PR `fix/royalties-double-mint-c01` merges and deploys, revert this
+// commit (or just drop the filter struct and the `type BaseCallFilter` line)
+// and bump `spec_version` once more.
+pub struct BaseCallFilter;
+impl frame_support::traits::Contains<RuntimeCall> for BaseCallFilter {
+	fn contains(call: &RuntimeCall) -> bool {
+		!matches!(
+			call,
+			RuntimeCall::PlimRoyalties(
+				pallet_plim_royalties::Call::claim_accumulated_royalties { .. }
+			)
+		)
+	}
+}
+
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 2400;
 	pub const Version: RuntimeVersion = VERSION;
@@ -69,6 +98,9 @@ parameter_types! {
 impl frame_system::Config for Runtime {
 	/// The block type for the runtime.
 	type Block = Block;
+	/// Emergency call pause for `claim_accumulated_royalties` — audit C-01.
+	/// Overrides the `SolochainDefaultConfig` default of `Everything`.
+	type BaseCallFilter = BaseCallFilter;
 	/// Block & extrinsics weights: base values and limits.
 	type BlockWeights = RuntimeBlockWeights;
 	/// The maximum length of a block (in bytes).
