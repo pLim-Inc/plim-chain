@@ -12,9 +12,21 @@
 //!
 //! | Currency  | Settlement                                      |
 //! |-----------|-------------------------------------------------|
-//! | PLIM      | On-chain via `NativeCurrency::deposit_into_existing` |
+//! | PLIM      | Already paid at sale time by `pallet-plim-marketplace::do_split_payout`. The accumulator is an audit/history record; `claim_accumulated_royalties` zeroes it and emits an event — it does **not** transfer tokens. |
 //! | PEUR      | Off-chain — event emitted for indexer           |
 //! | EURFiat   | Off-chain — event emitted for indexer           |
+//!
+//! ## C-01 fix history (audit 2026-05-15)
+//!
+//! Prior to this fix, `claim_accumulated_royalties` for the PLIM arm called
+//! `NativeCurrency::deposit_into_existing(&creator, amount)` which **minted**
+//! fresh PLIM out of thin air. Combined with the marketplace's
+//! `do_split_payout` (which already transfers the royalty from buyer → creator
+//! at sale time) and the `RoyaltyBridge` runtime adapter (which then records
+//! the amount into `AccumulatedRoyalties`), creators were effectively paid
+//! **twice**: once on the sale (transfer from buyer) and once on the claim
+//! (mint by the pallet). The fix removes the mint — the accumulator value is
+//! now a pure ledger record of royalties owed-and-already-settled.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -205,10 +217,16 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// Claim accumulated royalties for a given currency.
 		///
-		/// - For **PLIM**: transfers native tokens to the caller via
-		///   `NativeCurrency::deposit_into_existing`.
-		/// - For **PEUR** / **EURFiat**: emits a `RoyaltyClaimed` event only;
-		///   actual settlement happens off-chain.
+		/// **All currencies are event-only** in the current design — the
+		/// marketplace `do_split_payout` already moves the royalty to the
+		/// creator at sale time (for PLIM, an on-chain `transfer` from buyer
+		/// → creator; for PEUR/EURFiat, the off-chain settlement rail). The
+		/// `AccumulatedRoyalties` storage entry is a ledger of royalties
+		/// owed-and-already-settled; calling this extrinsic zeroes the entry
+		/// and emits `RoyaltyClaimed` for auditability — it does **not**
+		/// mint or transfer any tokens.
+		///
+		/// See audit finding C-01 (2026-05-15) for the prior double-mint bug.
 		#[pallet::call_index(0)]
 		#[pallet::weight(T::WeightInfo::claim_accumulated_royalties())]
 		pub fn claim_accumulated_royalties(
@@ -220,13 +238,12 @@ pub mod pallet {
 			let amount = AccumulatedRoyalties::<T>::get(&creator, &currency);
 			ensure!(!amount.is_zero(), Error::<T>::NoAccumulatedRoyalties);
 
-			// For PLIM: on-chain deposit. PEUR/EURFiat: event-only.
-			if currency == RoyaltyCurrency::PLIM {
-				// deposit_into_existing will fail if the account doesn't exist,
-				// which is fine — a creator must have an existential deposit.
-				let _imbalance = T::NativeCurrency::deposit_into_existing(&creator, amount)
-					.map_err(|_| Error::<T>::NoAccumulatedRoyalties)?;
-			}
+			// C-01 fix (audit 2026-05-15): no `deposit_into_existing` for PLIM.
+			// The marketplace's `do_split_payout` already transferred the
+			// royalty from buyer → creator at sale time; calling
+			// `deposit_into_existing` here would *mint* the amount a second
+			// time. Zero the accumulator and emit the event for audit; that
+			// is the entire settlement for this path.
 
 			// Reset accumulated balance to zero.
 			AccumulatedRoyalties::<T>::insert(&creator, &currency, BalanceOf::<T>::zero());
