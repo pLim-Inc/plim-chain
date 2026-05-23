@@ -26,6 +26,8 @@ pub use kyc_attestation::*;
 pub use spending_tier::*;
 
 #[cfg(test)]
+mod mock;
+#[cfg(test)]
 mod tests;
 // ===== /§6 KYC/AML v2 =====
 
