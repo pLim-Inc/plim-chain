@@ -291,6 +291,12 @@ impl pallet_plim_delegation::Config for Runtime {
 impl pallet_plim_compliance::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type ComplianceOrigin = EnsureRoot<AccountId>;
+	// §6 KYC/AML v2 — type wiring only (no spec_version bump).
+	// MaxJurisdictionLength sized for ISO-3166 alpha-3 + slack.
+	// Multisig 2-of-3 origin for ComplianceOrigin lands in the runtime-upgrade PR
+	// (gated on Compliance Officer interim designation per §10).
+	type MaxJurisdictionLength = ConstU32<8>;
+	type Balance = Balance;
 }
 
 impl pallet_plim_reputation::Config for Runtime {
