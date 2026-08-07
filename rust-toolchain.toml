@@ -1,0 +1,23 @@
+# Toolchain pinada — NO usar `stable` flotante en este repo.
+#
+# Por qué: el CI de plim-protocol instalaba `dtolnay/rust-toolchain@stable`, sin
+# pin ni fichero de toolchain. Este mismo árbol (commit 9b356f41) compiló EN VERDE
+# el 2026-05-16 (run 25962131699 de pLim-Inc/plim-protocol), cuando el stable del
+# día era 1.95.0. Con stable ya en 1.97.1 el enlazado del runtime WASM falla:
+#
+#   rust-lld: error: undefined symbol: ext_storage_get_version_1
+#   rust-lld: error: undefined symbol: ext_crypto_sr25519_verify_version_2
+#   ...  (host functions de sp_io)
+#
+# Es el síntoma clásico de un rustc/lld más nuevo que el polkadot-sdk que fija
+# este árbol: el código no cambió, cambió el compilador. 1.95.0 es el último
+# toolchain con verde demostrado sobre este commit.
+#
+# Al subir de versión: hacerlo deliberadamente, con el runtime WASM construido y
+# verificado en CI, no por deriva del canal.
+
+[toolchain]
+channel = "1.95.0"
+targets = ["wasm32-unknown-unknown"]
+components = ["rust-src"]
+profile = "minimal"
