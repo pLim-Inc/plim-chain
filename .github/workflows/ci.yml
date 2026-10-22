@@ -1,11 +1,8 @@
 name: CI
 
+# D50 (dono, 22/10): nada corre sozinho em runners da GitHub; matriz ubuntu+macos e cargo build pesado → só manual.
 on:
-  pull_request:
-  push:
-    branches:
-      - main
-      - master
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
