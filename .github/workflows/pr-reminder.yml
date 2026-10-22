@@ -3,10 +3,9 @@ name: PR Reminder
 permissions:
   pull-requests: write
 
+# D50 (dono, 22/10): nada corre sozinho em runners da GitHub; comentário automático em runner da GitHub → só manual.
 on:
-  pull_request:
-    types:
-      - opened
+  workflow_dispatch:
 
 jobs:
   pr-reminder:
